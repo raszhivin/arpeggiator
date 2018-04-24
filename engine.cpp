@@ -79,7 +79,7 @@ int* createChord(notes root, chord_types i, int *notes_array, unsigned short *sh
     notes_array[1] = (root+s1)%12;
     if (root+s1>11) *sh1=1; // octave shift
     notes_array[2] = (root+s2)%12;
-    if (root+s1>11) *sh2=1; // octave shift
+    if (root+s2>11) *sh2=1; // octave shift
 }
 
 short midiByNote (notes note, short octave)
@@ -93,7 +93,7 @@ short midiByNote (notes note, short octave)
 void arp::play()
 {
     int i;
-    short n, shift, oct_shift, bn;
+    short n, shift, oct_shift=0, bn;
     unsigned short sh1, sh2, notes_added=0;
     notes curNote[3];
     short notestoplay[15] = {0,0,0,0,0,0,0,0,0,0};
@@ -103,7 +103,6 @@ void arp::play()
     i = (baseNote + mode[progression].Shift)%12;
     bn = midiByNote ((notes)i, baseOctave);
     memset(notestoplay, sizeof(notestoplay), 0);
-    MIDI.sendNoteOn(bn, 127, 1);
     
     // Create chord (notes root, intervals i, int *notes_array)
     createChord((notes)i, mode[progression].chord_type, (int*)curNote, &sh1, &sh2);
@@ -122,7 +121,7 @@ void arp::play()
           notes_added++;
       }
     if ((order == 1)||(order==2)||(order==2))
-      for (i=steps; i>0; i--)
+      for (i=steps-1; i>=0; i--)
       {
           shift = i%3;
           oct_shift = i/3;
@@ -136,9 +135,11 @@ void arp::play()
 
     if (order==3)
       shuffle(notestoplay, notes_added);
-
+    //Serial.print(bn); Serial.print("\r\n");
+    MIDI.sendNoteOn(bn, 127, 1);
     for (i=0; i<notes_added; i++)
     {
+        //Serial.print(notestoplay[i]); Serial.print("\r\n");
         MIDI.sendNoteOn(notestoplay[i], 127, 1);
         // Delay
         delay(indelay);
@@ -148,8 +149,6 @@ void arp::play()
 
     //Stop base note
     MIDI.sendNoteOff(bn, 0, 1);
-    
-
 }
 
 arp::arp(notes bn, short bo, short os, unsigned short st, unsigned int d, unsigned m, unsigned int p) : baseNote(bn), baseOctave(bo), octaveShift(os), steps(st), indelay(d), progression(p)
@@ -172,4 +171,5 @@ arp::arp()
  void arp::midibegin()
  {
    MIDI.begin(4);                      // Launch MIDI
+   //Serial.begin(57600);
  }
