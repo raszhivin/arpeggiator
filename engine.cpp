@@ -141,8 +141,17 @@ void arp::play()
     {
         //Serial.print(notestoplay[i]); Serial.print("\r\n");
         MIDI.sendNoteOn(notestoplay[i], 127, 1);
-        // Delay
+
+        #ifdef INT_SYNC
+        // Delay value from poti
         delay(indelay);
+        #endif
+
+        #ifdef EXT_SYNC
+        // Wait for click from sync in
+        while ((digitalRead(syncinpin) == 0));
+        delay(65);
+        #endif
         // Stop note
         MIDI.sendNoteOff(notestoplay[i], 0, 1);     // Stop the note
     }

@@ -12,8 +12,13 @@ int ButtonVal;
 #define indelaypin 3
 #define orderpin 7
 #define modepin 6
+#define syncinpin 3
 
 #define LEDPin 13
+
+// Synchronization: choose one of two possible options:
+#define EXT_SYNC
+//#define INT_SYNC
 
 void readPoties()
 {
